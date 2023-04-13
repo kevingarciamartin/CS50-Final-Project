@@ -3,6 +3,8 @@ import os
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 
+from helpers import login_required
+
 # Configure application
 app = Flask(__name__)
 
@@ -23,3 +25,19 @@ def after_request(response):
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    """Log user in"""
+    
+    # Forget any user_id
+    session.clear()
+    
+    # POST
+    if request.method == "POST":
+        pass
+    
+    # GET
+    else:
+        return render_template("login.html")

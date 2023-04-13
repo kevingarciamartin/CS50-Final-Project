@@ -1,0 +1,87 @@
+:root {
+    --textColor: white;
+    --primaryBackgroundColor: #312e2b;
+    --secondaryBackgroundColor: rgba(0,0,0,.14);
+    --menuBackgroundColor: #262421;
+    --accentColor: rgb(127, 166, 80);
+}
+
+body {
+    background-color: var(--primaryBackgroundColor);
+    margin: 0px;
+    font-family: "Montserrat",sans-serif;
+}
+
+#menu {
+    height: 100vh;
+    display: flex;
+}
+
+#menu-items {
+    background-color: var(--menuBackgroundColor);
+}
+
+.logo {
+    color: var(--textColor);
+    font-size: 1.5rem;
+    display: block;
+    text-decoration: none;
+    margin: 1rem;
+}
+
+.fa-solid {
+    z-index: 1;
+}
+
+.logo-text {
+    font-weight: bold;
+    z-index: 3;
+    margin-left: -0.5rem;
+    text-shadow: -1px 0 var(--menuBackgroundColor), 0 1px var(--menuBackgroundColor), 1px 0 var(--menuBackgroundColor), 0 -1px var(--menuBackgroundColor);
+}
+
+.menu-item {
+    color: hsla(0,0%,100%,.85);
+    font-size: 1rem;
+    font-weight: 600;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    text-decoration: none;
+    margin: 1.7rem;
+}
+
+.menu-item:hover {
+    background-color: var(--secondaryBackgroundColor);
+}
+
+.menu-icon {
+    margin: auto;
+}
+
+.signup-btn {
+    display: block;
+    cursor: pointer;
+    font-size: 1rem;
+    border: none;
+    margin: 0.5rem 1rem;
+    padding: 0.5rem 1rem;
+    width: 75%;
+    border-radius: 0.2rem;
+    background-color: var(--primaryBackgroundColor);
+    color: hsla(0,0%,100%,.72);
+    font-weight: 500;
+}
+
+.login-btn {
+    display: block;
+    cursor: pointer;
+    font-size: 1rem;
+    border: none;
+    margin: 0.5rem 1rem;
+    padding: 0.5rem 1rem;
+    width: 75%;
+    border-radius: 0.2rem;
+    background-color: var(--accentColor);
+    color: var(--textColor);
+    font-weight: 500;
+}
