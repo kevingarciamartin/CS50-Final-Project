@@ -12,7 +12,7 @@
     {% if request.path not in pages_with_no_navbar %}
         <div id="menu">
             <div id="menu-items">
-                <a href="/" class="logo"><i class="logo-pawn fa-solid fa-chess-pawn fa-xl" style="color: #7fa650;"></i><span class="logo-text">Chess</span><span>50</span></a>
+                <a href="/" class="menu-logo"><i class="menu-logo-pawn fa-solid fa-chess-pawn fa-xl" style="color: #7fa650;"></i><span class="menu-logo-text">Chess</span><span>50</span></a>
                 <a href="/" class="menu-item">
                     <i class="menu-icon fa-solid fa-chess-board fa-lg" style="color: #897156;"></i>Play</a>
                 <a href="/" class="menu-item">
@@ -27,8 +27,8 @@
                     <i class="menu-icon fa-solid fa-users fa-lg"></i>Social</a>
                 <a href="/" class="menu-item">
                     <i class="menu-icon fa-solid fa-ellipsis fa-lg" style="color: #808080;"></i>More</a>
-                <button class="signup-btn" id="signup-btn">Sign Up</button>
-                <button class="login-btn" id="login-btn">Log In</button>
+                <a href="/register" class="menu-btn signup-btn">Sign Up</a>
+                <a href="/login" class="menu-btn login-btn">Log In</a>
             </div>
         </div>
     {% endif %} 
