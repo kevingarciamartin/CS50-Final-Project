@@ -101,6 +101,11 @@ body {
     color: var(--primaryTextColor);
 }
 
+/* Error */
+.error-message {
+    color: var(--primaryTextColor);
+}
+
 /* Register */
 .form-container {
     display: grid;
@@ -182,11 +187,13 @@ body {
     border-radius: 0.5rem;
     box-shadow: 0 0.5rem 0 0 var(--accentBorderColor);
     text-shadow: 0 .1rem 0 var(--textShadowColor,rgba(0,0,0,.4));
+    border: none;
 }
 
 .register-btn:hover {
     background-color: var(--accentColorHover);
     color: var(--primaryTextColor);
+    cursor: pointer;
 }
 
 .form-card > p {
