@@ -1,5 +1,6 @@
-__pycache__
-flask_session
-venv
+__pycache__/
+env/
+flask_session/
+venv/
 .env
 test.py
