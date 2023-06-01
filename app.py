@@ -18,9 +18,6 @@ Session(app)
 
 # Create connection to database
 db = SQL("sqlite:///app.db")
-# connection = sqlite3.connect("app.db", check_same_thread=False)
-# cursor = connection.cursor()
-
 
 @app.after_request
 def after_request(response):
@@ -117,27 +114,15 @@ def register():
         # Ensure username doesn't exist
         if len(db.execute("SELECT * FROM users WHERE username = ?", username)) != 0:
             return render_template("error.html", message="username is taken")
-        # cursor.execute("SELECT * FROM users WHERE username = ?", [username])
-        # if cursor.fetchone() != None:
-        #     return render_template("error.html", message="username is taken")
-        
+
         # Remember user
         db.execute("INSERT INTO users (username, hash) VALUES(?, ?)", username, hash)
-        # cursor.execute("INSERT INTO users (username, hash) VALUES(?, ?)", [username, hash])
-        # connection.commit()
-        
+ 
         # Query database for username
         rows = db.execute("SELECT * FROM users WHERE username = ?", username)
-        # cursor.execute("SELECT * FROM users WHERE username = ?", [username])
-        # result = cursor.fetchone()
-        # print(result)
-        # print(result[0])
-        # print(result[1])
         
         # Remember which user has logged in
         session["user_id"] = rows[0]["id"]
-        # session[username] = result[0]
-        # print(session[username])
         
         flash("Registered!")
         
