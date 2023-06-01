@@ -27,11 +27,23 @@
                     <i class="menu-icon fa-solid fa-users fa-lg"></i>Social</a>
                 <a href="/" class="menu-item">
                     <i class="menu-icon fa-solid fa-ellipsis fa-lg" style="color: #808080;"></i>More</a>
-                <a href="/register" class="menu-btn signup-btn">Sign Up</a>
-                <a href="/login" class="menu-btn login-btn">Log In</a>
+                {% if session["user_id"] %}
+                    <a href="/logout" class="menu-btn logout-btn signup-btn">Log Out</a>
+                {% else %}
+                    <a href="/register" class="menu-btn signup-btn">Sign Up</a>
+                    <a href="/login" class="menu-btn login-btn">Log In</a>
+                {% endif %}
             </div>
         </div>
     {% endif %} 
+
+    {% if get_flashed_messages() %}
+        <header>
+            <div class="alert alert-primary mb-0 text-center" role="alert">
+                {{ get_flashed_messages() | join(" ") }}
+            </div>
+        </header>
+    {% endif %}
 
     {% block main %}{% endblock %}
 

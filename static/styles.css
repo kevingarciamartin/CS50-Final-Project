@@ -60,9 +60,12 @@ body {
 }
 
 .menu-logo:hover,
-.menu-item:hover {
+.menu-logo:focus,
+.menu-item:hover,
+.menu-item:focus {
     background-color: var(--secondaryBackgroundColor);
     color: var(--primaryTextColor);
+    outline: none;
 }
 
 .menu-icon {
@@ -91,14 +94,18 @@ body {
     text-shadow: 0 .1rem 0 var(--textShadowColor,rgba(0,0,0,.4));
 }
 
-.signup-btn:hover {
+.signup-btn:hover,
+.signup-btn:focus {
     color: var(--primaryTextColor);
     background-color: var(--buttonColorHover);
+    outline: none;
 }
 
-.login-btn:hover {
+.login-btn:hover,
+.login-btn:focus {
     background-color: var(--accentColorHover);
     color: var(--primaryTextColor);
+    outline: none;
 }
 
 /* Error */
@@ -171,6 +178,55 @@ body {
     margin: 1rem 0;
 }
 
+.form-card > form > p {
+    font-size: 0.9rem;
+    color: hsla(0, 0%, 100%, 0.502);
+    display: flex;
+    justify-content: center;
+    margin-top: 2em;
+}
+
+.skill-card-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.skill-card {
+    --width: 6.5rem;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: hsla(0,0%,100%,.08);
+    width: var(--width);
+    height: var(--width);
+    padding: 1em 0 0;
+    margin: 0.5rem;
+    border-radius: 1rem;
+    border: none;
+}
+
+.skill-card:hover,
+.skill-card:focus,
+.skill-card:active {
+    background-color: hsla(0,0%,100%,.15);
+    outline: none;
+    cursor: pointer;
+}
+
+.skill-card:focus {
+    outline: 2px solid var(--accentColor);
+    outline-offset: 0.2rem;
+}
+
+.skill-card-text {
+    color: #e6e6e6;
+    font-size: 0.8rem;
+    margin-top: 2em;
+}
+
 .register-btn {
     display: flex;
     justify-content: center;
@@ -190,10 +246,12 @@ body {
     border: none;
 }
 
-.register-btn:hover {
+.register-btn:hover,
+.register-btn:focus {
     background-color: var(--accentColorHover);
     color: var(--primaryTextColor);
     cursor: pointer;
+    outline: none;
 }
 
 .form-card > p {

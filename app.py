@@ -1,5 +1,6 @@
 import os
 
+from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 import sqlite3
@@ -16,8 +17,10 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # Create connection to database
-connection = sqlite3.connect("app.db", check_same_thread=False)
-cursor = connection.cursor()
+db = SQL("sqlite:///app.db")
+# connection = sqlite3.connect("app.db", check_same_thread=False)
+# cursor = connection.cursor()
+
 
 @app.after_request
 def after_request(response):
@@ -42,9 +45,32 @@ def login():
     session.clear()
     
     # POST
-    if request.method == "POST":
-        pass
+    username = request.form.get("username")
+    password = request.form.get("password")
     
+    if request.method == "POST":
+        
+        # Ensure username was submitted
+        if not username:
+            return render_template("error.html", message="must provide username")
+        
+        # Ensure password was submitted
+        elif not password:
+            return render_template("error.html", message="must provide password")
+        
+        # Query database for username 
+        rows = db.execute("SELECT * FROM users WHERE username = ?", username)
+        
+        # Ensure username exists and password is correct
+        if len(rows) != 1 or not check_password_hash(rows[0]["hash"], password):
+            return render_template("error.html", message="invalid username and/or password")
+        
+        # Remember which user has logged in
+        session["user_id"] = rows[0]["id"]
+        
+        # Redirect user to home page
+        return redirect("/")
+            
     # GET
     else:
         return render_template("login.html")
@@ -89,22 +115,29 @@ def register():
             return render_template("error.html", message="passwords don't match")
         
         # Ensure username doesn't exist
-        print(cursor.execute("SELECT * FROM users WHERE username = ?", [username]))
-        print(cursor.fetchone())
-        # elif  == True:
+        if len(db.execute("SELECT * FROM users WHERE username = ?", username)) != 0:
+            return render_template("error.html", message="username is taken")
+        # cursor.execute("SELECT * FROM users WHERE username = ?", [username])
+        # if cursor.fetchone() != None:
         #     return render_template("error.html", message="username is taken")
         
-        # Remember user 
-        cursor.execute("INSERT INTO users (username, hash) VALUES(?, ?)", [username, hash])
-        connection.commit()
+        # Remember user
+        db.execute("INSERT INTO users (username, hash) VALUES(?, ?)", username, hash)
+        # cursor.execute("INSERT INTO users (username, hash) VALUES(?, ?)", [username, hash])
+        # connection.commit()
         
-        # Query database for username 
-        result = cursor.execute("SELECT * FROM users WHRE username = ?", [username])
-        
-        print(result.fetchone()) 
+        # Query database for username
+        rows = db.execute("SELECT * FROM users WHERE username = ?", username)
+        # cursor.execute("SELECT * FROM users WHERE username = ?", [username])
+        # result = cursor.fetchone()
+        # print(result)
+        # print(result[0])
+        # print(result[1])
         
         # Remember which user has logged in
-        session["user_id"] = result[0]["id"]
+        session["user_id"] = rows[0]["id"]
+        # session[username] = result[0]
+        # print(session[username])
         
         flash("Registered!")
         
