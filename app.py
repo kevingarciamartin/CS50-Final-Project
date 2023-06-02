@@ -1,5 +1,6 @@
 import os
 
+from chessdotcom import get_leaderboards
 from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
@@ -129,4 +130,43 @@ def register():
     
     # GET
     else:
+        
+        
+        
         return render_template("register.html")
+    
+
+@app.route("/statistics", methods=["GET", "POST"])
+@login_required
+def statistics():
+    """Show statistics"""
+    
+    # POST
+    if request.method == "POST":
+        pass
+    
+    # GET
+    else:
+        return render_template("statistics.html")
+    
+    
+@app.route("/leaderboards", methods=["GET", "POST"])
+@login_required
+def leaderboards():
+    """Show leaderboards"""
+    
+    # POST
+    if request.method == "POST":
+        pass
+    
+    # GET
+    else:
+        data = get_leaderboards().json
+        leaderboards = data["leaderboards"]
+        categories = ["live_blitz", "live_bullet", "live_rapid"]
+        topfive = {}
+        
+        for category in categories:
+            topfive[category] = leaderboards[category][0:5]
+            
+        return render_template("leaderboards.html", leaderboards=topfive, categories=categories)

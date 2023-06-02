@@ -2,16 +2,21 @@
     --primaryTextColor: white;
     --secondaryTextColor: hsla(0,0%,100%,.85);
     --textShadowColor: rgba(0,0,0,.4);
+
     --primaryBackgroundColor: hsl(30, 7%, 18%);
     --secondaryBackgroundColor: rgba(0,0,0,.14);
     --menuBackgroundColor: #262421;
+
     --accentColor: #7fa650;
     --accentColorHover: #95bb4a;
-    --accentBorderColor: #537133;
+    --accentBorderColor: rgb(83, 113, 51);
+
     --buttonColor: hsla(0,0%,100%,.1);
     --buttonColorHover: hsla(0,0%,100%,.15);
+
     --borderColor: hsla(0,0%,100%,.1);
     --borderFocus: hsla(0,0%,100%,.3);
+
     --linkColor: #52b1dc;
 }
 
@@ -27,11 +32,18 @@ body {
     font-family: "Montserrat", sans-serif;
 }
 
+.hero {
+    display: grid;
+    grid-template-columns: auto 1fr;
+}
+
+/* **** */
+/* Menu */
+/* **** */
 #menu-items {
     display: flex;
     flex-direction: column;
     justify-content: start;
-    max-width: 10rem;
     height: 100vh;
     background-color: var(--menuBackgroundColor);
 }
@@ -56,7 +68,7 @@ body {
     display: grid;
     grid-template-columns: 1fr 2fr;
     text-decoration: none;
-    padding: 0.8rem 0;
+    padding: 0.8rem 1rem 0.8rem 0;
 }
 
 .menu-logo:hover,
@@ -108,12 +120,16 @@ body {
     outline: none;
 }
 
+/* ***** */
 /* Error */
+/* ***** */
 .error-message {
     color: var(--primaryTextColor);
 }
 
+/* ******** */
 /* Register */
+/* ******** */
 .form-container {
     display: grid;
     place-items: center;
@@ -261,4 +277,92 @@ body {
 .form-card > p > a {
     text-decoration: none;
     color: var(--linkColor);
+}
+
+/* ************ */
+/* Leaderboards */
+/* ************ */
+.leaderboard-wrapper {
+    display: grid;
+    justify-items: center;
+    gap: 1.5rem;
+    color: var(--primaryTextColor)
+}
+
+.leaderboard-card {
+    background-color: var(--menuBackgroundColor);
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    gap: 2rem;
+    width: 50%;
+    border-radius: 0.5rem;
+    padding: 2rem;
+}
+
+.leaderboard-card:first-of-type {
+    margin-top: 2rem;
+}
+
+.leaderboard-card:last-of-type {
+    margin-bottom: 2rem;
+}
+
+.leaderboard-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2.5rem;
+    font-size: 1.5rem;
+    text-transform: capitalize
+}
+
+.leaderboard-header:hover {
+    cursor: pointer;
+    color: var(--secondaryTextColor);
+}
+
+.leaderboard-table {
+    display: grid;
+}
+
+.leaderboard-player {
+    display: grid;
+    grid-template-columns: 1fr 1fr 5fr 1fr;
+    padding: 1rem;
+    margin: -0.2rem;
+}
+
+.leaderboard-player > :nth-of-type(2n - 1) {
+    color: hsla(0, 0%, 100%, 0.8);
+}
+
+.leaderboard-player:first-of-type > :first-of-type {
+    color: gold;
+}
+.leaderboard-player:nth-of-type(2) > :first-of-type {
+    color: silver;
+}
+.leaderboard-player:nth-of-type(3) > :first-of-type {
+    color: rgb(131, 95, 46);
+}
+
+.got-title {
+    font-size: 0.7rem;
+    font-weight: bold;
+    transform: translateY(10%);
+}
+
+.got-title::after {
+    content: attr(data-tool-tip);
+    display: block;
+    position: absolute;
+    padding: 0.1em 0.3em;
+    background-color: rgb(180, 1, 1);
+    border-radius: 0.2rem;
+}
+
+.leaderboard-player:hover {
+    background-color: var(--secondaryBackgroundColor);
+    cursor: pointer;
 }

@@ -5,47 +5,40 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="/static/styles.css" rel="stylesheet"> 
-    <title>{% if request.path != '/' %}{% block title %}{% endblock %} | {% endif %}Chess50</title>
+    {% set pages_with_no_navbar = ['/login', '/register']%}
+    <title>{% if session["user_id"] or request.path in pages_with_no_navbar %}{% block title %}{% endblock %} | {% endif %}Chess50</title>
 </head>
 <body>
-    {% set pages_with_no_navbar = ['/login', '/register']%} 
     {% if request.path not in pages_with_no_navbar %}
-        <div id="menu">
-            <div id="menu-items">
-                <a href="/" class="menu-logo"><i class="menu-logo-pawn fa-solid fa-chess-pawn fa-xl" style="color: #7fa650;"></i><span class="menu-logo-text">Chess</span><span>50</span></a>
-                <a href="/" class="menu-item">
-                    <i class="menu-icon fa-solid fa-chess-board fa-lg" style="color: #897156;"></i>Play</a>
-                <a href="/" class="menu-item">
-                    <i class="menu-icon fa-solid fa-puzzle-piece fa-lg" style="color: #ff8040;"></i>Puzzles</a>
-                <a href="/" class="menu-item">
-                    <i class="menu-icon fa-solid fa-graduation-cap fa-lg" style="color: #006bd7;"></i>Learn</a>
-                <a href="/" class="menu-item">
-                    <i class="menu-icon fa-solid fa-binoculars fa-lg" style="color: #c0c0c0;"></i>Watch</a>
-                <a href="/" class="menu-item">
-                    <i class="menu-icon fa-solid fa-newspaper fa-lg" style="color: #ffffff;"></i>News</a>
-                <a href="/" class="menu-item">
-                    <i class="menu-icon fa-solid fa-users fa-lg"></i>Social</a>
-                <a href="/" class="menu-item">
-                    <i class="menu-icon fa-solid fa-ellipsis fa-lg" style="color: #808080;"></i>More</a>
-                {% if session["user_id"] %}
-                    <a href="/logout" class="menu-btn logout-btn signup-btn">Log Out</a>
-                {% else %}
-                    <a href="/register" class="menu-btn signup-btn">Sign Up</a>
-                    <a href="/login" class="menu-btn login-btn">Log In</a>
-                {% endif %}
+        <div class="hero">
+            <div id="menu">
+                <div id="menu-items">
+                    <a href="/" class="menu-logo"><i class="menu-logo-pawn fa-solid fa-chess-pawn fa-xl" style="color: #7fa650;"></i><span class="menu-logo-text">Chess</span><span>50</span></a>
+                    <a href="/" class="menu-item">
+                        <i class="menu-icon fa-solid fa-chess-board fa-lg" style="color: #897156;"></i>Play</a>
+                    <a href="/" class="menu-item">
+                        <i class="menu-icon fa-solid fa-puzzle-piece fa-lg" style="color: #ff8040;"></i>Puzzles</a>
+                    <a href="/statistics" class="menu-item">
+                        <i class="menu-icon fa-solid fa-chart-simple fa-lg" style="color: #bb0000;"></i>Statistics</a>
+                    <a href="/leaderboards" class="menu-item">
+                        <i class="menu-icon fa-solid fa-trophy fa-lg" style="color: #ecec00;"></i>Leaderboards</a>
+                    <a href="/" class="menu-item">
+                        <i class="menu-icon fa-solid fa-graduation-cap fa-lg" style="color: #006bd7;"></i>Learn</a>
+                    <a href="/" class="menu-item">
+                        <i class="menu-icon fa-solid fa-user fa-lg" style="color: #d6d6d6;"></i>Profile</a>
+                    {% if session["user_id"] %}
+                        <a href="/logout" class="menu-btn logout-btn signup-btn">Log Out</a>
+                    {% else %}
+                        <a href="/register" class="menu-btn signup-btn">Sign Up</a>
+                        <a href="/login" class="menu-btn login-btn">Log In</a>
+                    {% endif %}
+                </div>
             </div>
+            {% block main %}{% endblock %}
         </div>
+    {% else %}
+        {% block gate %}{% endblock %}
     {% endif %} 
-
-    {% if get_flashed_messages() %}
-        <header>
-            <div class="alert alert-primary mb-0 text-center" role="alert">
-                {{ get_flashed_messages() | join(" ") }}
-            </div>
-        </header>
-    {% endif %}
-
-    {% block main %}{% endblock %}
 
     <script src="https://kit.fontawesome.com/2ed5d43c8b.js" crossorigin="anonymous"></script>
 </body>
