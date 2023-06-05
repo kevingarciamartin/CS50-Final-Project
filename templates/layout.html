@@ -4,28 +4,28 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="/static/styles.css" rel="stylesheet"> 
+    <link href="/static/css/styles.css" rel="stylesheet"> 
     {% set pages_with_no_navbar = ['/login', '/register']%}
     <title>{% if session["user_id"] or request.path in pages_with_no_navbar %}{% block title %}{% endblock %} | {% endif %}Chess50</title>
 </head>
 <body>
     {% if request.path not in pages_with_no_navbar %}
         <div class="hero">
-            <div id="menu">
-                <div id="menu-items">
-                    <a href="/" class="menu-logo"><i class="menu-logo-pawn fa-solid fa-chess-pawn fa-xl" style="color: #7fa650;"></i><span class="menu-logo-text">Chess</span><span>50</span></a>
-                    <a href="/" class="menu-item">
-                        <i class="menu-icon fa-solid fa-chess-board fa-lg" style="color: #897156;"></i>Play</a>
-                    <a href="/" class="menu-item">
-                        <i class="menu-icon fa-solid fa-puzzle-piece fa-lg" style="color: #ff8040;"></i>Puzzles</a>
-                    <a href="/statistics" class="menu-item">
-                        <i class="menu-icon fa-solid fa-chart-simple fa-lg" style="color: #bb0000;"></i>Statistics</a>
-                    <a href="/leaderboards" class="menu-item">
-                        <i class="menu-icon fa-solid fa-trophy fa-lg" style="color: #ecec00;"></i>Leaderboards</a>
-                    <a href="/" class="menu-item">
-                        <i class="menu-icon fa-solid fa-graduation-cap fa-lg" style="color: #006bd7;"></i>Learn</a>
-                    <a href="/" class="menu-item">
-                        <i class="menu-icon fa-solid fa-user fa-lg" style="color: #d6d6d6;"></i>Profile</a>
+            <div id="menu" class="menu">
+                <a href="/" class="menu-logo"><i class="menu-logo-pawn fa-solid fa-chess-pawn fa-xl" style="color: #7fa650;"></i><span class="menu-logo-text">Chess</span>50</a>
+                <a href="/" class="menu-item">
+                    <i class="menu-icon fa-solid fa-chess-board fa-lg" style="color: #897156;"></i>Play</a>
+                <a href="/" class="menu-item">
+                    <i class="menu-icon fa-solid fa-puzzle-piece fa-lg" style="color: #ff8040;"></i>Puzzles</a>
+                <a href="/statistics" class="menu-item">
+                    <i class="menu-icon fa-solid fa-chart-simple fa-lg" style="color: #bb0000;"></i>Statistics</a>
+                <a href="/leaderboard" class="menu-item">
+                    <i class="menu-icon fa-solid fa-trophy fa-lg" style="color: #ecec00;"></i>Leaderboard</a>
+                <a href="/" class="menu-item">
+                    <i class="menu-icon fa-solid fa-graduation-cap fa-lg" style="color: #006bd7;"></i>Learn</a>
+                <a href="/" class="menu-item">
+                    <i class="menu-icon fa-solid fa-user fa-lg" style="color: #d6d6d6;"></i>Profile</a>
+                <div class="menu-btn-container">
                     {% if session["user_id"] %}
                         <a href="/logout" class="menu-btn logout-btn signup-btn">Log Out</a>
                     {% else %}
@@ -34,12 +34,36 @@
                     {% endif %}
                 </div>
             </div>
+            <button aria-controls="mobile-menu" class="mobile-menu-toggle" aria-expanded="false">
+                <span class="hamburger"></span>
+            </button>
+            <nav id="mobile-menu" data-visible="false" class="mobile-menu">
+                <ul>
+                    <li><a href="" class="mobile-menu-item"><i class="menu-icon fa-solid fa-xmark fa-lg" style="color: #c0c0c0;"></i></a></li>
+                    <li><a href="/" class="mobile-menu-item"><i class="menu-icon fa-solid fa-house fa-lg" style="color: #e6e6e6;"></i>Home</a></li>
+                    <li><a href="/" class="mobile-menu-item"><i class="menu-icon fa-solid fa-chess-board fa-lg" style="color: #897156;"></i>Play</a></li>
+                    <li><a href="/" class="mobile-menu-item"><i class="menu-icon fa-solid fa-puzzle-piece fa-lg" style="color: #ff8040;"></i>Puzzles</a></li>
+                    <li><a href="/statistics" class="mobile-menu-item"><i class="menu-icon fa-solid fa-chart-simple fa-lg" style="color: #bb0000;"></i>Statistics</a></li>
+                    <li><a href="/leaderboard" class="mobile-menu-item"><i class="menu-icon fa-solid fa-trophy fa-lg" style="color: #ecec00;"></i>Leaderboard</a></li>
+                    <li><a href="/" class="mobile-menu-item"><i class="menu-icon fa-solid fa-graduation-cap fa-lg" style="color: #006bd7;"></i>Learn</a></li>
+                    <li><a href="/" class="mobile-menu-item"><i class="menu-icon fa-solid fa-user fa-lg" style="color: #d6d6d6;"></i>Profile</a></li>
+                </ul>
+                <div class="mobile-menu-btn-container">
+                    {% if session["user_id"] %}
+                        <a href="/logout" class="mobile-menu-btn logout-btn signup-btn">Log Out</a>
+                    {% else %}
+                        <a href="/register" class="mobile-menu-btn signup-btn">Sign Up</a>
+                        <a href="/login" class="mobile-menu-btn login-btn">Log In</a>
+                    {% endif %}
+                </div>
+            </nav>       
             {% block main %}{% endblock %}
         </div>
     {% else %}
         {% block gate %}{% endblock %}
     {% endif %} 
 
+    <script src="/static/js/app.js"></script>
     <script src="https://kit.fontawesome.com/2ed5d43c8b.js" crossorigin="anonymous"></script>
 </body>
 </html>

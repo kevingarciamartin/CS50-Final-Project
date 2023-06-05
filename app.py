@@ -150,7 +150,7 @@ def statistics():
         return render_template("statistics.html")
     
     
-@app.route("/leaderboards", methods=["GET", "POST"])
+@app.route("/leaderboard", methods=["GET", "POST"])
 @login_required
 def leaderboards():
     """Show leaderboards"""
@@ -169,4 +169,4 @@ def leaderboards():
         for category in categories:
             topfive[category] = leaderboards[category][0:5]
             
-        return render_template("leaderboards.html", leaderboards=topfive, categories=categories)
+        return render_template("leaderboard.html", leaderboards=topfive, categories=categories)
