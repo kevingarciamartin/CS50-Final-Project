@@ -33,20 +33,25 @@ body {
     overflow-x: hidden;
 }
 
-.hero {
-    display: grid;
-    grid-template-columns: auto 1fr;
+.fixed-position {
+    position: fixed;
+    width: 100%;
 }
 
 /* **** */
 /* Menu */
 /* **** */
-.mobile-menu-toggle,
+.mobile-nav,
 .mobile-menu {
     display: none;
 }
 
 @media (min-width: 960px) {
+    .hero {
+        display: grid;
+        grid-template-columns: auto 1fr;
+    }
+
     .menu {
         display: flex;
         flex-direction: column;
@@ -137,14 +142,53 @@ body {
 }
 
 @media (max-width: 960px) {
+    .mobile-nav {
+        display: grid;
+        grid-template-columns: auto auto 1fr auto auto;
+        gap: 1rem;
+        align-items: center;
+        padding: 0.5rem;
+    }
+
     .mobile-menu-toggle {
         display: block;
-        position: absolute;
-        z-index: 9999;
+        z-index: 1000;
+        width: 2.1rem;
+        aspect-ratio: 1.3 / 1;
         border: 0;
         background: transparent;
-        top: 1.2rem;
-        left: 0.3rem;
+        cursor: pointer;
+    }
+
+    .menu-logo {
+        color: var(--primaryTextColor);
+        font-size: 1.5rem;
+        text-decoration: none;
+    }
+    
+    .menu-logo-text {
+        font-weight: bold;
+        margin-left: -0.5rem;
+        text-shadow: -1px 0 var(--menuBackgroundColor), 0 1px var(--menuBackgroundColor), 1px 0 var(--menuBackgroundColor), 0 -1px var(--menuBackgroundColor);
+    }
+
+    .mobile-nav-btn-container {
+        grid-column: 4 / 5;
+        display: flex;
+        gap: 1rem;
+    }
+
+    .mobile-nav-btn {
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+        padding: 0.5em 1em;
+        border-radius: 5px;
+    }
+
+    .mobile-nav-btn:first-of-type {
+        color: var(--secondaryTextColor);
+        background: var(--buttonColor);
     }
 
     .hamburger {
@@ -158,7 +202,7 @@ body {
     .hamburger::after {
         width: 2em;
         height: 4px;
-        background: hsla(0, 0%, 50%);
+        background: hsla(0, 0%, 60%);
         border-radius: 2px;
     }
 
@@ -183,7 +227,7 @@ body {
 
     .mobile-menu {
         position: fixed;
-        z-index: 1000;
+        z-index: 9999;
         display: grid;
         align-content: start;
         top: 0;
@@ -219,6 +263,10 @@ body {
         background-color: var(--secondaryBackgroundColor);
         color: var(--primaryTextColor);
         outline: none;
+    }
+
+    .mobile-menu-toggle-close span {
+        color: var(--menuBackgroundColor);
     }
 
     .menu-icon {

@@ -34,12 +34,23 @@
                     {% endif %}
                 </div>
             </div>
-            <button aria-controls="mobile-menu" class="mobile-menu-toggle" aria-expanded="false">
-                <span class="hamburger"></span>
-            </button>
+            <div class="mobile-nav">
+                <button aria-controls="mobile-menu" class="mobile-menu-toggle" aria-expanded="false">
+                    <span class="hamburger"></span>
+                </button>
+                <a href="/" class="menu-logo"><i class="menu-logo-pawn fa-solid fa-chess-pawn fa-xl" style="color: #7fa650;"></i><span class="menu-logo-text">Chess</span>50</a>
+                <div class="mobile-nav-btn-container">
+                    {% if session["user_id"] %}
+                        <a href="/logout" class="mobile-nav-btn logout-btn signup-btn">Log Out</a>
+                    {% else %}
+                        <a href="/register" class="mobile-nav-btn signup-btn">Sign Up</a>
+                        <a href="/login" class="mobile-nav-btn login-btn">Log In</a>
+                    {% endif %}
+                </div>
+            </div>
             <nav id="mobile-menu" data-visible="false" class="mobile-menu">
                 <ul>
-                    <li><a href="" class="mobile-menu-item"><i class="menu-icon fa-solid fa-xmark fa-lg" style="color: #c0c0c0;"></i></a></li>
+                    <li><a href="#" class="mobile-menu-toggle-close"><i class="menu-icon fa-solid fa-xmark fa-xl" style="color: #c0c0c0;"></i><span>.</span></a></li>
                     <li><a href="/" class="mobile-menu-item"><i class="menu-icon fa-solid fa-house fa-lg" style="color: #e6e6e6;"></i>Home</a></li>
                     <li><a href="/" class="mobile-menu-item"><i class="menu-icon fa-solid fa-chess-board fa-lg" style="color: #897156;"></i>Play</a></li>
                     <li><a href="/" class="mobile-menu-item"><i class="menu-icon fa-solid fa-puzzle-piece fa-lg" style="color: #ff8040;"></i>Puzzles</a></li>
