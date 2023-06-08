@@ -136,6 +136,14 @@ def register():
         return render_template("register.html")
     
 
+@app.route("/play")
+@login_required
+def play():
+    """Play chess"""
+    
+    return render_template("play.html")
+
+
 @app.route("/statistics", methods=["GET", "POST"])
 @login_required
 def statistics():
@@ -171,7 +179,7 @@ def leaderboards():
             
         return render_template("leaderboard.html", leaderboards=topfive, categories=categories)
     
-@app.route("/about", methods=["GET"])
+@app.route("/about")
 def about():
     """Show about"""
     

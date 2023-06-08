@@ -4,7 +4,13 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="/static/css/styles.css" rel="stylesheet"> 
+    
+    <link href="/static/css/styles.css" rel="stylesheet">
+    <script src="/static/js/app.js"></script>
+
+    <!-- Fontawesome -->
+    <script src="https://kit.fontawesome.com/2ed5d43c8b.js" crossorigin="anonymous"></script>
+
     {% set pages_with_no_navbar = ['/login', '/register']%}
     <title>{% if session["user_id"] or request.path in pages_with_no_navbar %}{% block title %}{% endblock %} | {% endif %}Chess50</title>
 </head>
@@ -77,8 +83,5 @@
     {% else %}
         {% block gate %}{% endblock %}
     {% endif %} 
-
-    <script src="/static/js/app.js"></script>
-    <script src="https://kit.fontawesome.com/2ed5d43c8b.js" crossorigin="anonymous"></script>
 </body>
 </html>
