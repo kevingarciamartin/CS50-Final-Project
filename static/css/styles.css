@@ -483,6 +483,21 @@ body {
 }
 
 
+/* **** */
+/* Play */
+/* **** */
+
+.chess-board-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.chess-board {
+    width: 600px;
+}
+
+
 /* ************ */
 /* Leaderboards */
 /* ************ */
