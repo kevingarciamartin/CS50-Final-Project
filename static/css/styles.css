@@ -1,6 +1,7 @@
 :root {
     --primaryTextColor: white;
-    --secondaryTextColor: hsla(0,0%,100%,.85);
+    --secondaryTextColor: hsla(0, 0%, 100%, 0.85);
+    --thirdTextColor: #c2c2c1;
     --textShadowColor: rgba(0,0,0,.4);
 
     --primaryBackgroundColor: hsl(30, 7%, 18%);
@@ -38,9 +39,11 @@ body {
     width: 100%;
 }
 
+
 /* **** */
 /* Menu */
 /* **** */
+
 .mobile-nav,
 .mobile-menu {
     display: none;
@@ -56,8 +59,9 @@ body {
         display: flex;
         flex-direction: column;
         justify-content: start;
-        min-height: 100vh;
-        min-height: 100dvh;
+        height: 100vh;
+        height: 100dvh;
+        max-width: fit-content;
         background-color: var(--menuBackgroundColor);
         position: sticky;
         position: -webkit-sticky;
@@ -314,16 +318,21 @@ body {
     }
 }
 
+
 /* ***** */
 /* Error */
 /* ***** */
+
 .error-message {
     color: var(--primaryTextColor);
+    font-size: 2rem;
 }
+
 
 /* ******** */
 /* Register */
 /* ******** */
+
 .form-container {
     display: grid;
     place-items: center;
@@ -473,9 +482,11 @@ body {
     color: var(--linkColor);
 }
 
+
 /* ************ */
 /* Leaderboards */
 /* ************ */
+
 .leaderboard-wrapper {
     display: grid;
     justify-items: center;
@@ -577,5 +588,44 @@ body {
         grid-template-columns: none;
         grid-template-rows: auto 1fr;
         gap: unset;
+    }
+}
+
+
+/* ***** */
+/* About */
+/* ***** */
+
+.about-card {
+    justify-self: center;
+    background: var(--menuBackgroundColor);
+    width: min(60%, 70ch);
+    height: fit-content;
+    margin: 1rem;
+    padding: 2rem;
+    border-radius: 5px;
+    transform: translateY(clamp(1rem, 5vh, 20rem));
+}
+
+.about-header {
+    color: var(--primaryTextColor);
+}
+
+.about-card p {
+    color: var(--thirdTextColor);
+}
+
+@media (max-width: 960px) {
+    .about-card {
+        width: fit-content;
+        margin-top: 2rem;
+    }
+}
+
+@media (max-width: 770px) {
+    .about-card {
+        font-size: clamp(0.8rem, 2vw + 0.1rem, 1rem);
+        padding: 1em;
+        margin: 0.5em;
     }
 }

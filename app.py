@@ -170,3 +170,9 @@ def leaderboards():
             topfive[category] = leaderboards[category][0:5]
             
         return render_template("leaderboard.html", leaderboards=topfive, categories=categories)
+    
+@app.route("/about", methods=["GET"])
+def about():
+    """Show about"""
+    
+    return render_template("about.html")
