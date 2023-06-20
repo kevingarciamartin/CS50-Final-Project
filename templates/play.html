@@ -18,14 +18,64 @@
 
 {% block main %}
     <div class="chess-board-container">
-        <!-- Chess board -->
         <div id="chess_board" class="chess-board"></div>
+        <div class="game-card">
+            <div class="game-info">
+                <h3>Status</h2>
+                <div id="status"></div>
+                <h3>FEN</h3>
+                <div id="fen"></div>
+                <h3>PGN</h3>
+                <div id="pgn"></div>
+            </div>
+            <div class="game-btn-container">
+                <button id="new-game" class="new-game-btn game-btn"><i class="fa-solid fa-plus fa-xl"></i>New Game</button>
+                <button id="engine-move" class="game-btn"><i class="fa-solid fa-robot fa-xl"></i>Computer Move</button>
+                <button id="take-back" class="game-btn"><i class="fa-solid fa-backward-step fa-xl"></i>Take Back</button>
+                <button id="flip-board" class="game-btn"><i class="fa-solid fa-rotate fa-xl"></i>Flip Board</button>
+            </div>
+        </div>
     </div>
 
     <script>
         // NOTE: this example uses the chess.js library:
         // https://github.com/jhlywa/chess.js
-        
+
+        function engine_move() {
+            // make HTTP POST request to make API engine move
+            $.post('/engine_move', {'fen': game.fen()}, function(data) {
+                // load FEN into the current board state
+                game.move(data.best_move, { sloppy: true })
+
+                // update board position
+                board.position(game.fen())
+
+                updateStatus()
+            })
+        }
+
+        // Handle game buttons
+        $('#new-game').on('click', function() {
+            game.reset()
+            board.position('start')
+        })
+
+        $('#engine-move').on('click', function() {
+            engine_move()
+        })
+
+        $('#take-back').on('click', function() {
+            game.undo()
+            board.position(game.fen())
+            updateStatus()
+        })
+
+        $('#flip-board').on('click', function() {
+            board.flip()
+        })
+
+
+        // GUI board and game state variables
         var board = null
         var game = new Chess()
         var $status = $('#status')
@@ -53,6 +103,9 @@
         
         // illegal move
         if (move === null) return 'snapback'
+
+        // engine move
+        engine_move()
         
         updateStatus()
         }
@@ -104,6 +157,7 @@
         onSnapEnd: onSnapEnd
         }
         board = Chessboard('chess_board', config)
+        $(window).resize(board.resize)
         
         updateStatus()
     </script>

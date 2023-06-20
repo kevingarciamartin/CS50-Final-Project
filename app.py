@@ -1,12 +1,17 @@
 import os
+import chess
+import chess.engine
 
-from chessdotcom import get_leaderboards
+from chessdotcom import get_current_daily_puzzle, get_leaderboards
 from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from helpers import login_required
+
+# Create chess engine instance
+engine = chess.engine.SimpleEngine.popen_uci("engine/stockfish-windows-2022-x86-64-modern.exe")
 
 # Configure application
 app = Flask(__name__)
@@ -136,12 +141,59 @@ def register():
         return render_template("register.html")
     
 
-@app.route("/play")
+@app.route("/play", methods=["GET", "POST"])
 @login_required
 def play():
     """Play chess"""
     
-    return render_template("play.html")
+    # POST 
+    if request.method == "POST":
+        pass
+    
+    # GET
+    else:
+        return render_template("play.html")
+    
+    
+@app.route("/engine_move", methods=["POST"])
+def engine_move():
+    """Chess engine move"""
+    
+    # Extract FEN string from HTTP POST request body
+    fen = request.form.get('fen')
+    
+    # Initialize python chess board instance
+    board = chess.Board(fen)
+    
+    # Engine move
+    result = engine.play(board, chess.engine.Limit(time=0.1))
+    
+    # Update python chess board state
+    board.push(result.move)
+    
+    # Extract FEN from current board state
+    fen = board.fen()
+    
+    return {'fen': fen, 'best_move': str(result.move)}
+
+
+@app.route("/puzzle", methods=["GET", "POST"])
+@login_required
+def puzzle():
+    """Solve daily puzzle"""
+    
+    # POST
+    if request.method == "POST":
+        data = get_current_daily_puzzle().json
+        puzzle = data["puzzle"]
+        
+        return {'fen': puzzle["fen"]}
+    
+    # GET
+    else:
+        data = get_current_daily_puzzle().json
+        puzzle = data["puzzle"]
+        return render_template("puzzle.html", puzzle=puzzle)
 
 
 @app.route("/statistics", methods=["GET", "POST"])

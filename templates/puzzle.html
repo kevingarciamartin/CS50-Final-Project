@@ -1,0 +1,182 @@
+{% extends "layout.html" %}
+
+{% block packages %}
+    <!-- JQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+    <!-- chessjs -->
+    <script src="static/js/chess.js"></script>
+
+    <!-- chessboardjs -->
+    <link rel="stylesheet" href="static/css/chessboard-1.0.0.min.css">
+    <script src="static/js/chessboard-1.0.0.min.js"></script>
+{% endblock %}
+
+{% block title %}
+    Daily Puzzle
+{% endblock %}
+
+{% block main %}
+    <div class="chess-board-container">
+        <div id="chess_board" class="chess-board"></div>
+        <div class="puzzle-card">
+            <div class="puzzle-header">
+                <h1><i class="fa-regular fa-calendar-days" style="color: #9dc147;"></i>Daily Puzzle</h1>
+                <h2>{{ puzzle["title"] }}</h2>
+            </div>
+            <div class="game-info">
+                <h3>Status</h2>
+                <div id="status"></div>
+                <h3>Source</h3>
+                <a class="link" href="https://www.chess.com/daily-chess-puzzle">chess.com/daily-chess-puzzle</a>
+            </div>
+            <div class="game-btn-container puzzle-btn-container">
+                <button id="restart-puzzle" class="game-btn"><i class="fa-solid fa-rotate-left fa-xl"></i>Restart Puzzle</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // NOTE: this example uses the chess.js library:
+        // https://github.com/jhlywa/chess.js
+
+        function engine_move() {
+            // Make HTTP POST request to make API engine move
+            $.post('/engine_move', {'fen': game.fen()}, function(data) {
+                // Load FEN into the current board state
+                game.move(data.best_move, { sloppy: true })
+
+                // Update board position
+                board.position(game.fen())
+
+                updateStatus()
+            })
+        }
+
+        function get_puzzle_fen() {
+            // Get daily puzzle FEN
+            $.post('/puzzle', function(data) {
+                // Update board position
+                board.position(data.fen)
+                game.load(data.fen)
+                if (game.turn() === 'b') {
+                    board.orientation('black')
+                }
+                updateStatus()
+            })
+        }
+
+        // Handle game buttons
+        $('#new-game').on('click', function() {
+            game.reset()
+            board.position('start')
+        })
+
+        $('#engine-move').on('click', function() {
+            engine_move()
+        })
+
+        $('#take-back').on('click', function() {
+            game.undo()
+            board.position(game.fen())
+            updateStatus()
+        })
+
+        $('#flip-board').on('click', function() {
+            board.flip()
+        })
+
+        $('#restart-puzzle').on('click', function() {
+            get_puzzle_fen()
+        })
+
+
+        // GUI board and game state variables
+        var board = null
+        var game = new Chess()
+        var $status = $('#status')
+        var $fen = $('#fen')
+        var $pgn = $('#pgn')
+        get_puzzle_fen()
+
+        
+        function onDragStart (source, piece, position, orientation) {
+            // do not pick up pieces if the game is over
+            if (game.game_over()) return false
+            
+            // only pick up pieces for the side to move
+            if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+                (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+                return false
+            }
+        }
+        
+        function onDrop (source, target) {
+            // see if the move is legal
+            var move = game.move({
+                from: source,
+                to: target,
+                promotion: 'q' // NOTE: always promote to a queen for example simplicity
+        })
+        
+        // illegal move
+        if (move === null) return 'snapback'
+
+        // engine move
+        engine_move()
+        
+        updateStatus()
+        }
+        
+        // update the board position after the piece snap
+        // for castling, en passant, pawn promotion
+        function onSnapEnd () {
+        board.position(game.fen())
+        }
+        
+        function updateStatus () {
+        var status = ''
+        
+        var moveColor = 'White'
+        if (game.turn() === 'b') {
+            moveColor = 'Black'
+        }
+        
+        // checkmate?
+        if (game.in_checkmate()) {
+            status = 'Game over, ' + moveColor + ' is in checkmate.'
+        }
+        
+        // draw?
+        else if (game.in_draw()) {
+            status = 'Game over, drawn position'
+        }
+        
+        // game still on
+        else {
+            status = moveColor + ' to move'
+        
+            // check?
+            if (game.in_check()) {
+            status += ', ' + moveColor + ' is in check'
+            }
+        }
+        
+        $status.html(status)
+        //$fen.html(game.fen())
+        //$pgn.html(game.pgn())
+        }
+        
+        var config = {
+        draggable: true,
+        //position: FEN,
+        //orientation: board.orientation(),
+        onDragStart: onDragStart,
+        onDrop: onDrop,
+        onSnapEnd: onSnapEnd
+        }
+        board = Chessboard('chess_board', config)
+        
+        updateStatus()
+    </script>
+{% endblock %}
