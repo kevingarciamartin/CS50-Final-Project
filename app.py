@@ -1,12 +1,17 @@
 import os
+import chess
+import chess.engine
 
-from chessdotcom import get_leaderboards
+from chessdotcom import get_current_daily_puzzle, get_leaderboards, get_player_profile, get_player_stats
 from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from helpers import login_required
+
+# Create chess engine instance
+engine = chess.engine.SimpleEngine.popen_uci("engine/stockfish-windows-2022-x86-64-modern.exe")
 
 # Configure application
 app = Flask(__name__)
@@ -130,32 +135,63 @@ def register():
     
     # GET
     else:
-        
-        
-        
+
         return render_template("register.html")
     
 
-@app.route("/play")
+@app.route("/play", methods=["GET", "POST"])
 @login_required
 def play():
     """Play chess"""
     
-    return render_template("play.html")
-
-
-@app.route("/statistics", methods=["GET", "POST"])
-@login_required
-def statistics():
-    """Show statistics"""
-    
-    # POST
+    # POST 
     if request.method == "POST":
         pass
     
     # GET
     else:
-        return render_template("statistics.html")
+        return render_template("play.html")
+    
+    
+@app.route("/engine_move", methods=["POST"])
+def engine_move():
+    """Chess engine move"""
+    
+    # Extract FEN string from HTTP POST request body
+    fen = request.form.get('fen')
+    
+    # Initialize python chess board instance
+    board = chess.Board(fen)
+    
+    # Engine move
+    result = engine.play(board, chess.engine.Limit(time=0.1))
+    
+    # Update python chess board state
+    board.push(result.move)
+    
+    # Extract FEN from current board state
+    fen = board.fen()
+    
+    return {'fen': fen, 'best_move': str(result.move)}
+
+
+@app.route("/puzzle", methods=["GET", "POST"])
+@login_required
+def puzzle():
+    """Solve daily puzzle"""
+    
+    # POST
+    if request.method == "POST":
+        data = get_current_daily_puzzle().json
+        puzzle = data["puzzle"]
+        
+        return {'fen': puzzle["fen"]}
+    
+    # GET
+    else:
+        data = get_current_daily_puzzle().json
+        puzzle = data["puzzle"]
+        return render_template("puzzle.html", puzzle=puzzle)
     
     
 @app.route("/leaderboard", methods=["GET", "POST"])
@@ -178,12 +214,57 @@ def leaderboards():
             topfive[category] = leaderboards[category][0:5]
             
         return render_template("leaderboard.html", leaderboards=topfive, categories=categories)
-    
+
+
 @app.route("/about")
 def about():
     """Show about"""
     
     return render_template("about.html")
+
+
+@app.route("/profile", methods=["GET", "POST"])
+@login_required
+def profile():
+    """Show profile"""
+    
+    # POST
+    if request.method == "POST":
+        
+        searched_username = request.form.get("username")
+        try:
+            data_profile = get_player_profile(searched_username).json
+            data_stats = get_player_stats(searched_username).json
+        except:
+            error_message = "Invalid username"
+            return render_template("search_profile.html", error_message=error_message)
+        
+        player = data_profile["player"]
+        player["username"] = player["url"][-len(searched_username):]
+        country = player["country"][-2:].lower()
+        player["country"] = "-".join(("flag", country))
+        player["status"] = player["status"].capitalize()
+        
+        stats = data_stats["stats"]
+        
+        categories = ["chess_blitz", "chess_bullet", "chess_rapid"]
+        
+        games = {}
+        games["total"] = 0
+        for category in categories:
+            games[category] = 0
+            try:
+                for gameScenario in stats[category]["record"]:
+                    games[category] += stats[category]["record"][gameScenario] 
+                games["total"] += games[category]
+            except:
+                pass
+            
+        return render_template("profile.html", player=player, stats=stats, categories=categories, games=games)
+    
+    # GET
+    else:
+        return render_template("search_profile.html")
 
 
 if __name__ == '__main__':

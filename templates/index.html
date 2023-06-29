@@ -5,5 +5,35 @@
 {% endblock %}
 
 {% block main %}
-
+    <main class="index-container">
+        <section class="index-intro-container">
+            <div class="index-board">
+                <a href="/play">
+                    <img src="https://www.chess.com/bundles/web/images/offline-play/standardboard.1d6f9426.png" alt="Play Computer">
+                </a>
+            </div>
+            <div class="index-intro">
+                <h1>Play Chess Offline on the <span>#2*</span> Site!</h1>
+                <div class="index-info">*Highly Subjective and Up for Debate</div>
+                <a href="/play" class="btn primary-btn index-intro-btn">
+                    <i class="fa-solid fa-robot fa-xl"></i>
+                    <div>
+                        <span class="index-btn-title">Play Computer</span>
+                        <span class="index-btn-subtitle">Play against Stockfish 15.1</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+        <section class="index-suggestion index-suggestion-with-board">
+            <h2>Solve the Daily Chess Puzzle</h2>
+            <div class="index-suggestion-board">
+                <a href="/puzzle">
+                    <img src="https://www.chess.com/bundles/web/images/web/board-puzzles.4a54c49f@2x.png" alt="Solve Daily Puzzle">
+                </a>
+            </div>
+            <a href="/puzzle" class="btn primary-btn index-suggestion-btn">
+                <span class="index-btn-title">Solve Puzzle</span>
+            </a>
+        </section>
+    </main>
 {% endblock %}

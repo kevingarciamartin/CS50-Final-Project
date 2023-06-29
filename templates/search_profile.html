@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Profile
+{% endblock %}
+
+{% block main %}
+    <form class="profile-form profile-form-GET" action="/profile" method="post">
+        <input name="username" placeholder="Search chess.com username" type="text">
+        <button><i class="fa-solid fa-magnifying-glass"></i></button>
+        <p class="profile-error-message">{{ error_message }}</p>
+    </form>
+{% endblock %}
