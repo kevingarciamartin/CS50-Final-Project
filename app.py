@@ -2,7 +2,7 @@ import os
 import chess
 import chess.engine
 
-from chessdotcom import get_current_daily_puzzle, get_leaderboards
+from chessdotcom import get_current_daily_puzzle, get_leaderboards, get_player_profile, get_player_stats
 from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
@@ -135,9 +135,7 @@ def register():
     
     # GET
     else:
-        
-        
-        
+
         return render_template("register.html")
     
 
@@ -194,20 +192,6 @@ def puzzle():
         data = get_current_daily_puzzle().json
         puzzle = data["puzzle"]
         return render_template("puzzle.html", puzzle=puzzle)
-
-
-@app.route("/statistics", methods=["GET", "POST"])
-@login_required
-def statistics():
-    """Show statistics"""
-    
-    # POST
-    if request.method == "POST":
-        pass
-    
-    # GET
-    else:
-        return render_template("statistics.html")
     
     
 @app.route("/leaderboard", methods=["GET", "POST"])
@@ -230,12 +214,57 @@ def leaderboards():
             topfive[category] = leaderboards[category][0:5]
             
         return render_template("leaderboard.html", leaderboards=topfive, categories=categories)
-    
+
+
 @app.route("/about")
 def about():
     """Show about"""
     
     return render_template("about.html")
+
+
+@app.route("/profile", methods=["GET", "POST"])
+@login_required
+def profile():
+    """Show profile"""
+    
+    # POST
+    if request.method == "POST":
+        
+        searched_username = request.form.get("username")
+        try:
+            data_profile = get_player_profile(searched_username).json
+            data_stats = get_player_stats(searched_username).json
+        except:
+            error_message = "Invalid username"
+            return render_template("search_profile.html", error_message=error_message)
+        
+        player = data_profile["player"]
+        player["username"] = player["url"][-len(searched_username):]
+        country = player["country"][-2:].lower()
+        player["country"] = "-".join(("flag", country))
+        player["status"] = player["status"].capitalize()
+        
+        stats = data_stats["stats"]
+        
+        categories = ["chess_blitz", "chess_bullet", "chess_rapid"]
+        
+        games = {}
+        games["total"] = 0
+        for category in categories:
+            games[category] = 0
+            try:
+                for gameScenario in stats[category]["record"]:
+                    games[category] += stats[category]["record"][gameScenario] 
+                games["total"] += games[category]
+            except:
+                pass
+            
+        return render_template("profile.html", player=player, stats=stats, categories=categories, games=games)
+    
+    # GET
+    else:
+        return render_template("search_profile.html")
 
 
 if __name__ == '__main__':

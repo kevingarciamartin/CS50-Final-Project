@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <link href="/static/css/styles.css" rel="stylesheet">
+    <link href="/static/css/flags.css" rel="stylesheet">
 
     {% block packages %}{% endblock %}
 
@@ -24,14 +25,12 @@
                     <i class="menu-icon fa-solid fa-chess-board fa-lg" style="color: #897156;"></i>Play</a>
                 <a href="/puzzle" class="menu-item">
                     <i class="menu-icon fa-solid fa-puzzle-piece fa-lg" style="color: #ff8040;"></i>Puzzle</a>
-                <a href="/statistics" class="menu-item">
-                    <i class="menu-icon fa-solid fa-chart-simple fa-lg" style="color: #bb0000;"></i>Statistics</a>
                 <a href="/leaderboard" class="menu-item">
                     <i class="menu-icon fa-solid fa-trophy fa-lg" style="color: #ecec00;"></i>Leaderboard</a>
                 <a href="/about" class="menu-item">
                     <i class="menu-icon fa-solid fa-circle-info fa-lg" style="color: #0080ff;"></i>About</a>
                 {% if session["user_id"] %}
-                    <a href="#" class="menu-item">
+                    <a href="/profile" class="menu-item">
                         <i class="menu-icon fa-solid fa-user fa-lg" style="color: #d6d6d6;"></i>Profile</a>
                 {% endif %}
                 <div class="menu-btn-container">
@@ -63,11 +62,10 @@
                     <li><a href="/" class="mobile-menu-item"><i class="menu-icon fa-solid fa-house fa-lg" style="color: #e6e6e6;"></i>Home</a></li>
                     <li><a href="/play" class="mobile-menu-item"><i class="menu-icon fa-solid fa-chess-board fa-lg" style="color: #897156;"></i>Play</a></li>
                     <li><a href="/puzzle" class="mobile-menu-item"><i class="menu-icon fa-solid fa-puzzle-piece fa-lg" style="color: #ff8040;"></i>Puzzle</a></li>
-                    <li><a href="/statistics" class="mobile-menu-item"><i class="menu-icon fa-solid fa-chart-simple fa-lg" style="color: #bb0000;"></i>Statistics</a></li>
                     <li><a href="/leaderboard" class="mobile-menu-item"><i class="menu-icon fa-solid fa-trophy fa-lg" style="color: #ecec00;"></i>Leaderboard</a></li>
                     <li><a href="/about" class="menu-item"><i class="menu-icon fa-solid fa-circle-info fa-lg" style="color: #0080ff;"></i>About</a></li>
                     {% if session["user_id"] %}
-                        <li><a href="#" class="menu-item"><i class="menu-icon fa-solid fa-user fa-lg" style="color: #d6d6d6;"></i>Profile</a></li>
+                        <li><a href="/profile" class="menu-item"><i class="menu-icon fa-solid fa-user fa-lg" style="color: #d6d6d6;"></i>Profile</a></li>
                     {% endif %}
                 </ul>
                 <div class="mobile-menu-btn-container">

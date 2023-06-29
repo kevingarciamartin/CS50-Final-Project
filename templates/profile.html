@@ -1,0 +1,108 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    {% if player["name"] %}
+        {% if player["title"] %}
+            {{ player["title"] }}
+        {% endif %}
+        {{ player["name"] }} ({{ player["username"] }}) - Profile
+    {% else %}
+        {{ player["username"] }} - Profile
+    {% endif %}
+{% endblock %}
+
+{% block main %}
+    <div class="profile-container">
+        <form class="profile-form profile-form-POST" action="/profile" method="post">
+            <input name="username" placeholder="Search chess.com username" type="text">
+            <button><i class="fa-solid fa-magnifying-glass"></i></button>
+        </form>
+        <div class="player-card">
+            <img src="{{ player["avatar"] }}" alt="">
+            <div class="player-info">
+                {% if player["title"] %}
+                    <h1 class="flex">
+                        <div class="got-title" data-tool-tip="{{ player["title"] }}"></div>
+                        <div class="player-card-title">{{ player["username"] }}<span class="{{ player["country"] }}"></span></div>
+                    </h1>
+                {% else %}
+                    <h1>
+                        {{ player["username"] }}<span class="{{ player["country"] }}"></span>
+                    </h1>
+                {% endif %}
+                <div class="player-subtitle">
+                    {% if player["name"] %}
+                        <div>{{ player["name"] }}</div>
+                    {% endif %}
+                    {% if player["location"] %}
+                        <div><i class="fa-solid fa-location-dot"></i> {{ player["location"] }}</div>
+                    {% endif %}
+                </div>
+                {% if stats["fide"] %}
+                    <div class="player-info-row">
+                        <span>Fide rating</span><span>{{ stats["fide"] }}</span>
+                    </div>
+                {% endif %}
+                    <div class="player-info-row">
+                        <span>Status</span><span>{{ player["status"] }}</span>
+                    </div>
+                {% if player["is_streamer"] %}
+                    <div class="player-info-row">
+                        <span>Twitch</span><a class="link" href="{{ player["twitch_url"] }}">{{ player["twitch_url"] }}</a>
+                    </div>
+                {% endif %}
+                <div class="player-info-row">
+                    <span>chess.com</span><a href="{{ player["url"] }}" class="link">{{ player["url"] }}</a></div>
+                </div>
+        </div>
+        <div class="stats-card">
+            <h3>Stats</h3>
+            <div class="stats-general-info">
+                <div class="stats-general-info-row">
+                    <i class="fa-solid fa-chess-board fa-lg"></i>
+                    <span style="font-weight: normal;">Games</span>
+                    <span>{{ games["total"] }}</span>
+                </div>
+            </div>
+            {% for category in categories %}
+                {% if stats[category] %}
+                    <div class="stats-content">
+                        <div class="stats-header">
+                            {% if category == "chess_blitz" %}
+                                <i class="fa-solid fa-bolt-lightning fa-lg" style="color: #e4c801;"></i>
+                                <span>Blitz</span>
+                            {% elif category == "chess_bullet" %}
+                                <i class="fa-solid fa-crosshairs fa-lg" style="color: #b50000;"></i>
+                                <span>Bullet</span>
+                            {% elif category == "chess_rapid" %}
+                                <i class="fa-solid fa-stopwatch fa-lg" style="color: #7fa650;"></i>
+                                <span>Rapid</span>
+                            {% endif %}
+                            <span>{{ stats[category]["last"]["rating"] }}</span>
+                        </div>
+                        <div class="stats-info">
+                            {% if stats[category]["best"] %}
+                                <div class="stats-info-row">
+                                    <span>Highest</span>
+                                    <span class="positive">{{ stats[category]["best"]["rating"] }}</span>
+                                </div>
+                            {% endif %}
+                            {% if games[category] %}
+                                <div class="stats-info-row">
+                                    <span>Games</span>
+                                    <span>{{ games[category] }}</span>
+                                </div>
+                            {% endif %}
+                            {% if stats[category]["record"] %}
+                                <div class="stats-info-row">
+                                    <span>W/D/L</span>
+                                    <span><span class="positive">{{ stats[category]["record"]["win"] }}</span> / {{ stats[category]["record"]["draw"] }} / <span class="negative">{{ stats[category]["record"]["loss"] }}</span></span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

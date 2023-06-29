@@ -58,6 +58,7 @@
         $('#new-game').on('click', function() {
             game.reset()
             board.position('start')
+            updateStatus()
         })
 
         $('#engine-move').on('click', function() {
