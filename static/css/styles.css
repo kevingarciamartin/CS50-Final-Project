@@ -44,7 +44,8 @@ body {
 }
 
 h1, h2, h3 {
-    text-wrap: balance;
+    /* Not the best support */
+    text-wrap: balance; 
 }
 
 .link {
