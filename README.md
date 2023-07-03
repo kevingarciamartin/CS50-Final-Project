@@ -46,7 +46,7 @@ A script from chessboardjs.com for embedding a chessboard on a site.
 Includes the html templates. I decided on making a layout template for the overarching structure of the website where all the other templates would be called.
 
 #### layout.html
-The main template with the page title, packages and the menues - unfortunately, due to inexperience with media queries, I made separate menues for mobile and desktop in the markup. The appropiate template is rendered with {% block elements %}.
+The main template with the page title, packages and the menues - unfortunately, due to inexperience with media queries, I made separate menues for mobile and desktop in the markup. The appropiate template is rendered with block elements.
 
 #### play.html
 The template for playing chess against the chess engine (Stockfish 15.1).
