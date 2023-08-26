@@ -34,7 +34,7 @@ Includes the images of the chess pieces.
 Includes the JavaScript.
 
 ##### app.js
-A script for toggeling the moile menu.
+A script for toggeling the mobile menu.
 
 ##### chess.js 
 A TypeScript chess library from https://github.com/jhlywa/chess.js for chess move generation/validation, piece placement/movement, and check/checkmate/draw detection.
