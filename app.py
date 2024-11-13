@@ -11,7 +11,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from helpers import login_required
 
 # Create chess engine instance
-engine = chess.engine.SimpleEngine.popen_uci("/home/Kegama/Chess50/engine/stockfish/Linux/stockfish_10_x64")
+engine = chess.engine.SimpleEngine.popen_uci("engine/stockfish/Linux/stockfish_10_x64")
 
 # Configure application
 app = Flask(__name__)
@@ -22,7 +22,7 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # Create connection to database
-DB_PATH = "/home/Kegama/Chess50/app.db"
+DB_PATH = "app.db"
 db = SQL(f"sqlite:///{DB_PATH}")
 
 @app.after_request
