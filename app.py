@@ -22,7 +22,8 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # Create connection to database
-db = SQL("sqlite:///app.db")
+DB_PATH = "/home/Kegama/Chess50/app.db"
+db = SQL(f"sqlite:///{DB_PATH}")
 
 @app.after_request
 def after_request(response):
