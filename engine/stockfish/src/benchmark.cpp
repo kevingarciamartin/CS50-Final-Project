@@ -1,6 +1,8 @@
 /*
   Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2024 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
+  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
+  Copyright (C) 2015-2019 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
 
   Stockfish is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -16,17 +18,18 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "benchmark.h"
-
-#include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <istream>
 #include <vector>
+
+#include "position.h"
+
+using namespace std;
 
 namespace {
 
-// clang-format off
-const std::vector<std::string> Defaults = {
+const vector<string> Defaults = {
   "setoption name UCI_Chess960 value false",
   "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
   "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 10",
@@ -58,11 +61,6 @@ const std::vector<std::string> Defaults = {
   "1r3k2/4q3/2Pp3b/3Bp3/2Q2p2/1p1P2P1/1P2KP2/3N4 w - - 0 1",
   "6k1/4pp1p/3p2p1/P1pPb3/R7/1r2P1PP/3B1P2/6K1 w - - 0 1",
   "8/3p3B/5p2/5P2/p7/PP5b/k7/6K1 w - - 0 1",
-  "5rk1/q6p/2p3bR/1pPp1rP1/1P1Pp3/P3B1Q1/1K3P2/R7 w - - 93 90",
-  "4rrk1/1p1nq3/p7/2p1P1pp/3P2bp/3Q1Bn1/PPPB4/1K2R1NR w - - 40 21",
-  "r3k2r/3nnpbp/q2pp1p1/p7/Pp1PPPP1/4BNN1/1P5P/R2Q1RK1 w kq - 0 16",
-  "3Qb1k1/1r2ppb1/pN1n2q1/Pp1Pp1Pr/4P2p/4BP2/4B1R1/1R5K b - - 11 40",
-  "4k3/3q1r2/1N2r1b1/3ppN2/2nPP3/1B1R2n1/2R1Q3/3K4 w - - 5 1",
 
   // 5-man positions
   "8/8/8/8/5kp1/P7/8/1K1N4 w - - 0 1",     // Kc2 - mate
@@ -85,79 +83,74 @@ const std::vector<std::string> Defaults = {
 
   // Chess 960
   "setoption name UCI_Chess960 value true",
-  "bbqnnrkr/pppppppp/8/8/8/8/PPPPPPPP/BBQNNRKR w HFhf - 0 1 moves g2g3 d7d5 d2d4 c8h3 c1g5 e8d6 g5e7 f7f6",
-  "nqbnrkrb/pppppppp/8/8/8/8/PPPPPPPP/NQBNRKRB w KQkq - 0 1",
+  "bbqnnrkr/pppppppp/8/8/8/8/PPPPPPPP/BBQNNRKR w KQkq - 0 1 moves g2g3 d7d5 d2d4 c8h3 c1g5 e8d6 g5e7 f7f6",
   "setoption name UCI_Chess960 value false"
 };
-// clang-format on
 
-}  // namespace
+} // namespace
 
-namespace Stockfish::Benchmark {
+/// setup_bench() builds a list of UCI commands to be run by bench. There
+/// are five parameters: TT size in MB, number of search threads that
+/// should be used, the limit value spent for each position, a file name
+/// where to look for positions in FEN format and the type of the limit:
+/// depth, perft, nodes and movetime (in millisecs).
+///
+/// bench -> search default positions up to depth 13
+/// bench 64 1 15 -> search default positions up to depth 15 (TT = 64MB)
+/// bench 64 4 5000 current movetime -> search current position with 4 threads for 5 sec
+/// bench 64 1 100000 default nodes -> search default positions for 100K nodes each
+/// bench 16 1 5 default perft -> run a perft 5 on default positions
 
-// Builds a list of UCI commands to be run by bench. There
-// are five parameters: TT size in MB, number of search threads that
-// should be used, the limit value spent for each position, a file name
-// where to look for positions in FEN format, and the type of the limit:
-// depth, perft, nodes and movetime (in milliseconds). Examples:
-//
-// bench                            : search default positions up to depth 13
-// bench 64 1 15                    : search default positions up to depth 15 (TT = 64MB)
-// bench 64 1 100000 default nodes  : search default positions for 100K nodes each
-// bench 64 4 5000 current movetime : search current position with 4 threads for 5 sec
-// bench 16 1 5 blah perft          : run a perft 5 on positions in file "blah"
-std::vector<std::string> setup_bench(const std::string& currentFen, std::istream& is) {
+vector<string> setup_bench(const Position& current, istream& is) {
 
-    std::vector<std::string> fens, list;
-    std::string              go, token;
+  vector<string> fens, list;
+  string go, token;
 
-    // Assign default values to missing arguments
-    std::string ttSize    = (is >> token) ? token : "16";
-    std::string threads   = (is >> token) ? token : "1";
-    std::string limit     = (is >> token) ? token : "13";
-    std::string fenFile   = (is >> token) ? token : "default";
-    std::string limitType = (is >> token) ? token : "depth";
+  // Assign default values to missing arguments
+  string ttSize    = (is >> token) ? token : "16";
+  string threads   = (is >> token) ? token : "1";
+  string limit     = (is >> token) ? token : "13";
+  string fenFile   = (is >> token) ? token : "default";
+  string limitType = (is >> token) ? token : "depth";
 
-    go = limitType == "eval" ? "eval" : "go " + limitType + " " + limit;
+  go = "go " + limitType + " " + limit;
 
-    if (fenFile == "default")
-        fens = Defaults;
+  if (fenFile == "default")
+      fens = Defaults;
 
-    else if (fenFile == "current")
-        fens.push_back(currentFen);
+  else if (fenFile == "current")
+      fens.push_back(current.fen());
 
-    else
-    {
-        std::string   fen;
-        std::ifstream file(fenFile);
+  else
+  {
+      string fen;
+      ifstream file(fenFile);
 
-        if (!file.is_open())
-        {
-            std::cerr << "Unable to open file " << fenFile << std::endl;
-            exit(EXIT_FAILURE);
-        }
+      if (!file.is_open())
+      {
+          cerr << "Unable to open file " << fenFile << endl;
+          exit(EXIT_FAILURE);
+      }
 
-        while (getline(file, fen))
-            if (!fen.empty())
-                fens.push_back(fen);
+      while (getline(file, fen))
+          if (!fen.empty())
+              fens.push_back(fen);
 
-        file.close();
-    }
+      file.close();
+  }
 
-    list.emplace_back("setoption name Threads value " + threads);
-    list.emplace_back("setoption name Hash value " + ttSize);
-    list.emplace_back("ucinewgame");
+  list.emplace_back("ucinewgame");
+  list.emplace_back("setoption name Threads value " + threads);
+  list.emplace_back("setoption name Hash value " + ttSize);
 
-    for (const std::string& fen : fens)
-        if (fen.find("setoption") != std::string::npos)
-            list.emplace_back(fen);
-        else
-        {
-            list.emplace_back("position fen " + fen);
-            list.emplace_back(go);
-        }
+  for (const string& fen : fens)
+      if (fen.find("setoption") != string::npos)
+          list.emplace_back(fen);
+      else
+      {
+          list.emplace_back("position fen " + fen);
+          list.emplace_back(go);
+      }
 
-    return list;
+  return list;
 }
-
-}  // namespace Stockfish

@@ -1,6 +1,8 @@
 /*
   Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2024 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
+  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
+  Copyright (C) 2015-2019 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
 
   Stockfish is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,80 +21,81 @@
 #ifndef TT_H_INCLUDED
 #define TT_H_INCLUDED
 
-#include <cstddef>
-#include <cstdint>
-#include <tuple>
-
-#include "memory.h"
+#include "misc.h"
 #include "types.h"
 
-namespace Stockfish {
+/// TTEntry struct is the 10 bytes transposition table entry, defined as below:
+///
+/// key        16 bit
+/// move       16 bit
+/// value      16 bit
+/// eval value 16 bit
+/// generation  6 bit
+/// bound type  2 bit
+/// depth       8 bit
 
-class ThreadPool;
-struct TTEntry;
-struct Cluster;
+struct TTEntry {
 
-// There is only one global hash table for the engine and all its threads. For chess in particular, we even allow racy
-// updates between threads to and from the TT, as taking the time to synchronize access would cost thinking time and
-// thus elo. As a hash table, collisions are possible and may cause chess playing issues (bizarre blunders, faulty mate
-// reports, etc). Fixing these also loses elo; however such risk decreases quickly with larger TT size.
-//
-// `probe` is the primary method: given a board position, we lookup its entry in the table, and return a tuple of:
-//   1) whether the entry already has this position
-//   2) a copy of the prior data (if any) (may be inconsistent due to read races)
-//   3) a writer object to this entry
-// The copied data and the writer are separated to maintain clear boundaries between local vs global objects.
+  Move  move()  const { return (Move )move16; }
+  Value value() const { return (Value)value16; }
+  Value eval()  const { return (Value)eval16; }
+  Depth depth() const { return (Depth)(depth8 * int(ONE_PLY)); }
+  Bound bound() const { return (Bound)(genBound8 & 0x3); }
+  void save(Key k, Value v, Bound b, Depth d, Move m, Value ev);
 
+private:
+  friend class TranspositionTable;
 
-// A copy of the data already in the entry (possibly collided). `probe` may be racy, resulting in inconsistent data.
-struct TTData {
-    Move  move;
-    Value value, eval;
-    Depth depth;
-    Bound bound;
-    bool  is_pv;
+  uint16_t key16;
+  uint16_t move16;
+  int16_t  value16;
+  int16_t  eval16;
+  uint8_t  genBound8;
+  int8_t   depth8;
 };
 
 
-// This is used to make racy writes to the global TT.
-struct TTWriter {
-   public:
-    void write(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev, uint8_t generation8);
-
-   private:
-    friend class TranspositionTable;
-    TTEntry* entry;
-    TTWriter(TTEntry* tte);
-};
-
+/// A TranspositionTable consists of a power of 2 number of clusters and each
+/// cluster consists of ClusterSize number of TTEntry. Each non-empty entry
+/// contains information of exactly one position. The size of a cluster should
+/// divide the size of a cache line size, to ensure that clusters never cross
+/// cache lines. This ensures best cache performance, as the cacheline is
+/// prefetched, as soon as possible.
 
 class TranspositionTable {
 
-   public:
-    ~TranspositionTable() { aligned_large_pages_free(table); }
+  static constexpr int CacheLineSize = 64;
+  static constexpr int ClusterSize = 3;
 
-    void resize(size_t mbSize, ThreadPool& threads);  // Set TT size
-    void clear(ThreadPool& threads);                  // Re-initialize memory, multithreaded
-    int  hashfull()
-      const;  // Approximate what fraction of entries (permille) have been written to during this root search
+  struct Cluster {
+    TTEntry entry[ClusterSize];
+    char padding[2]; // Align to a divisor of the cache line size
+  };
 
-    void
-    new_search();  // This must be called at the beginning of each root search to track entry aging
-    uint8_t generation() const;  // The current age, used when writing new data to the TT
-    std::tuple<bool, TTData, TTWriter>
-    probe(const Key key) const;  // The main method, whose retvals separate local vs global objects
-    TTEntry* first_entry(const Key key)
-      const;  // This is the hash function; its only external use is memory prefetching.
+  static_assert(CacheLineSize % sizeof(Cluster) == 0, "Cluster size incorrect");
 
-   private:
-    friend struct TTEntry;
+public:
+ ~TranspositionTable() { free(mem); }
+  void new_search() { generation8 += 4; } // Lower 2 bits are used by Bound
+  TTEntry* probe(const Key key, bool& found) const;
+  int hashfull() const;
+  void resize(size_t mbSize);
+  void clear();
 
-    size_t   clusterCount;
-    Cluster* table = nullptr;
+  // The 32 lowest order bits of the key are used to get the index of the cluster
+  TTEntry* first_entry(const Key key) const {
+    return &table[(uint32_t(key) * uint64_t(clusterCount)) >> 32].entry[0];
+  }
 
-    uint8_t generation8 = 0;  // Size must be not bigger than TTEntry::genBound8
+private:
+  friend struct TTEntry;
+
+  size_t clusterCount;
+  Cluster* table;
+  void* mem;
+  uint8_t generation8; // Size must be not bigger than TTEntry::genBound8
 };
 
-}  // namespace Stockfish
+extern TranspositionTable TT;
 
-#endif  // #ifndef TT_H_INCLUDED
+#endif // #ifndef TT_H_INCLUDED

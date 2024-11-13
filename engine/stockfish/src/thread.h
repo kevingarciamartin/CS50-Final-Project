@@ -1,6 +1,8 @@
 /*
   Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2024 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
+  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
+  Copyright (C) 2015-2019 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
 
   Stockfish is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -21,158 +23,102 @@
 
 #include <atomic>
 #include <condition_variable>
-#include <cstddef>
-#include <cstdint>
-#include <functional>
-#include <memory>
 #include <mutex>
+#include <thread>
 #include <vector>
 
-#include "numa.h"
+#include "material.h"
+#include "movepick.h"
+#include "pawns.h"
 #include "position.h"
 #include "search.h"
-#include "thread_win32_osx.h"
-
-namespace Stockfish {
+#include "thread_win32.h"
 
 
-class OptionsMap;
-using Value = int;
+/// Thread class keeps together all the thread-related stuff. We use
+/// per-thread pawn and material hash tables so that once we get a
+/// pointer to an entry its life time is unlimited and we don't have
+/// to care about someone changing the entry under our feet.
 
-// Sometimes we don't want to actually bind the threads, but the recipient still
-// needs to think it runs on *some* NUMA node, such that it can access structures
-// that rely on NUMA node knowledge. This class encapsulates this optional process
-// such that the recipient does not need to know whether the binding happened or not.
-class OptionalThreadToNumaNodeBinder {
-   public:
-    OptionalThreadToNumaNodeBinder(NumaIndex n) :
-        numaConfig(nullptr),
-        numaId(n) {}
-
-    OptionalThreadToNumaNodeBinder(const NumaConfig& cfg, NumaIndex n) :
-        numaConfig(&cfg),
-        numaId(n) {}
-
-    NumaReplicatedAccessToken operator()() const {
-        if (numaConfig != nullptr)
-            return numaConfig->bind_current_thread_to_numa_node(numaId);
-        else
-            return NumaReplicatedAccessToken(numaId);
-    }
-
-   private:
-    const NumaConfig* numaConfig;
-    NumaIndex         numaId;
-};
-
-// Abstraction of a thread. It contains a pointer to the worker and a native thread.
-// After construction, the native thread is started with idle_loop()
-// waiting for a signal to start searching.
-// When the signal is received, the thread starts searching and when
-// the search is finished, it goes back to idle_loop() waiting for a new signal.
 class Thread {
-   public:
-    Thread(Search::SharedState&,
-           std::unique_ptr<Search::ISearchManager>,
-           size_t,
-           OptionalThreadToNumaNodeBinder);
-    virtual ~Thread();
 
-    void idle_loop();
-    void start_searching();
-    void clear_worker();
-    void run_custom_job(std::function<void()> f);
+  Mutex mutex;
+  ConditionVariable cv;
+  size_t idx;
+  bool exit = false, searching = true; // Set before starting std::thread
+  std::thread stdThread;
 
-    void ensure_network_replicated();
+public:
+  explicit Thread(size_t);
+  virtual ~Thread();
+  virtual void search();
+  void clear();
+  void idle_loop();
+  void start_searching();
+  void wait_for_search_finished();
 
-    // Thread has been slightly altered to allow running custom jobs, so
-    // this name is no longer correct. However, this class (and ThreadPool)
-    // require further work to make them properly generic while maintaining
-    // appropriate specificity regarding search, from the point of view of an
-    // outside user, so renaming of this function is left for whenever that happens.
-    void   wait_for_search_finished();
-    size_t id() const { return idx; }
+  Pawns::Table pawnsTable;
+  Material::Table materialTable;
+  Endgames endgames;
+  size_t pvIdx, pvLast;
+  int selDepth, nmpMinPly;
+  Color nmpColor;
+  std::atomic<uint64_t> nodes, tbHits;
 
-    std::unique_ptr<Search::Worker> worker;
-    std::function<void()>           jobFunc;
-
-   private:
-    std::mutex                mutex;
-    std::condition_variable   cv;
-    size_t                    idx, nthreads;
-    bool                      exit = false, searching = true;  // Set before starting std::thread
-    NativeThread              stdThread;
-    NumaReplicatedAccessToken numaAccessToken;
+  Position rootPos;
+  Search::RootMoves rootMoves;
+  Depth rootDepth, completedDepth;
+  CounterMoveHistory counterMoves;
+  ButterflyHistory mainHistory;
+  CapturePieceToHistory captureHistory;
+  ContinuationHistory continuationHistory;
+  Score contempt;
 };
 
 
-// ThreadPool struct handles all the threads-related stuff like init, starting,
-// parking and, most importantly, launching a thread. All the access to threads
-// is done through this class.
-class ThreadPool {
-   public:
-    ThreadPool() {}
+/// MainThread is a derived class specific for main thread
 
-    ~ThreadPool() {
-        // destroy any existing thread(s)
-        if (threads.size() > 0)
-        {
-            main_thread()->wait_for_search_finished();
+struct MainThread : public Thread {
 
-            threads.clear();
-        }
-    }
+  using Thread::Thread;
 
-    ThreadPool(const ThreadPool&) = delete;
-    ThreadPool(ThreadPool&&)      = delete;
+  void search() override;
+  void check_time();
 
-    ThreadPool& operator=(const ThreadPool&) = delete;
-    ThreadPool& operator=(ThreadPool&&)      = delete;
-
-    void   start_thinking(const OptionsMap&, Position&, StateListPtr&, Search::LimitsType);
-    void   run_on_thread(size_t threadId, std::function<void()> f);
-    void   wait_on_thread(size_t threadId);
-    size_t num_threads() const;
-    void   clear();
-    void   set(const NumaConfig& numaConfig,
-               Search::SharedState,
-               const Search::SearchManager::UpdateContext&);
-
-    Search::SearchManager* main_manager();
-    Thread*                main_thread() const { return threads.front().get(); }
-    uint64_t               nodes_searched() const;
-    uint64_t               tb_hits() const;
-    Thread*                get_best_thread() const;
-    void                   start_searching();
-    void                   wait_for_search_finished() const;
-
-    std::vector<size_t> get_bound_thread_count_by_numa_node() const;
-
-    void ensure_network_replicated();
-
-    std::atomic_bool stop, abortedSearch, increaseDepth;
-
-    auto cbegin() const noexcept { return threads.cbegin(); }
-    auto begin() noexcept { return threads.begin(); }
-    auto end() noexcept { return threads.end(); }
-    auto cend() const noexcept { return threads.cend(); }
-    auto size() const noexcept { return threads.size(); }
-    auto empty() const noexcept { return threads.empty(); }
-
-   private:
-    StateListPtr                         setupStates;
-    std::vector<std::unique_ptr<Thread>> threads;
-    std::vector<NumaIndex>               boundThreadToNumaNode;
-
-    uint64_t accumulate(std::atomic<uint64_t> Search::Worker::*member) const {
-
-        uint64_t sum = 0;
-        for (auto&& th : threads)
-            sum += (th->worker.get()->*member).load(std::memory_order_relaxed);
-        return sum;
-    }
+  double bestMoveChanges, previousTimeReduction;
+  Value previousScore;
+  int callsCnt;
 };
 
-}  // namespace Stockfish
 
-#endif  // #ifndef THREAD_H_INCLUDED
+/// ThreadPool struct handles all the threads-related stuff like init, starting,
+/// parking and, most importantly, launching a thread. All the access to threads
+/// is done through this class.
+
+struct ThreadPool : public std::vector<Thread*> {
+
+  void start_thinking(Position&, StateListPtr&, const Search::LimitsType&, bool = false);
+  void clear();
+  void set(size_t);
+
+  MainThread* main()        const { return static_cast<MainThread*>(front()); }
+  uint64_t nodes_searched() const { return accumulate(&Thread::nodes); }
+  uint64_t tb_hits()        const { return accumulate(&Thread::tbHits); }
+
+  std::atomic_bool stop, ponder, stopOnPonderhit;
+
+private:
+  StateListPtr setupStates;
+
+  uint64_t accumulate(std::atomic<uint64_t> Thread::* member) const {
+
+    uint64_t sum = 0;
+    for (Thread* th : *this)
+        sum += (th->*member).load(std::memory_order_relaxed);
+    return sum;
+  }
+};
+
+extern ThreadPool Threads;
+
+#endif // #ifndef THREAD_H_INCLUDED

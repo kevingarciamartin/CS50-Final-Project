@@ -1,6 +1,8 @@
 /*
   Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2024 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
+  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
+  Copyright (C) 2015-2019 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
 
   Stockfish is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,59 +21,62 @@
 #ifndef UCI_H_INCLUDED
 #define UCI_H_INCLUDED
 
-#include <cstdint>
-#include <iostream>
+#include <map>
 #include <string>
-#include <string_view>
 
-#include "engine.h"
-#include "misc.h"
-#include "search.h"
-
-namespace Stockfish {
+#include "types.h"
 
 class Position;
-class Move;
-class Score;
-enum Square : int;
-using Value = int;
 
-class UCIEngine {
-   public:
-    UCIEngine(int argc, char** argv);
+namespace UCI {
 
-    void loop();
+class Option;
 
-    static int         to_cp(Value v, const Position& pos);
-    static std::string format_score(const Score& s);
-    static std::string square(Square s);
-    static std::string move(Move m, bool chess960);
-    static std::string wdl(Value v, const Position& pos);
-    static std::string to_lower(std::string str);
-    static Move        to_move(const Position& pos, std::string str);
-
-    static Search::LimitsType parse_limits(std::istream& is);
-
-    auto& engine_options() { return engine.get_options(); }
-
-   private:
-    Engine      engine;
-    CommandLine cli;
-
-    static void print_info_string(const std::string& str);
-
-    void          go(std::istringstream& is);
-    void          bench(std::istream& args);
-    void          position(std::istringstream& is);
-    void          setoption(std::istringstream& is);
-    std::uint64_t perft(const Search::LimitsType&);
-
-    static void on_update_no_moves(const Engine::InfoShort& info);
-    static void on_update_full(const Engine::InfoFull& info, bool showWDL);
-    static void on_iter(const Engine::InfoIter& info);
-    static void on_bestmove(std::string_view bestmove, std::string_view ponder);
+/// Custom comparator because UCI options should be case insensitive
+struct CaseInsensitiveLess {
+  bool operator() (const std::string&, const std::string&) const;
 };
 
-}  // namespace Stockfish
+/// Our options container is actually a std::map
+typedef std::map<std::string, Option, CaseInsensitiveLess> OptionsMap;
 
-#endif  // #ifndef UCI_H_INCLUDED
+/// Option class implements an option as defined by UCI protocol
+class Option {
+
+  typedef void (*OnChange)(const Option&);
+
+public:
+  Option(OnChange = nullptr);
+  Option(bool v, OnChange = nullptr);
+  Option(const char* v, OnChange = nullptr);
+  Option(double v, int minv, int maxv, OnChange = nullptr);
+  Option(const char* v, const char* cur, OnChange = nullptr);
+
+  Option& operator=(const std::string&);
+  void operator<<(const Option&);
+  operator double() const;
+  operator std::string() const;
+  bool operator==(const char*) const;
+
+private:
+  friend std::ostream& operator<<(std::ostream&, const OptionsMap&);
+
+  std::string defaultValue, currentValue, type;
+  int min, max;
+  size_t idx;
+  OnChange on_change;
+};
+
+void init(OptionsMap&);
+void loop(int argc, char* argv[]);
+std::string value(Value v);
+std::string square(Square s);
+std::string move(Move m, bool chess960);
+std::string pv(const Position& pos, Depth depth, Value alpha, Value beta);
+Move to_move(const Position& pos, std::string& str);
+
+} // namespace UCI
+
+extern UCI::OptionsMap Options;
+
+#endif // #ifndef UCI_H_INCLUDED
