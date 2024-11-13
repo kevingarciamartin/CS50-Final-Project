@@ -11,7 +11,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from helpers import login_required
 
 # Create chess engine instance
-engine = chess.engine.SimpleEngine.popen_uci("engine/stockfish/stockfish-ubuntu-x86-64")
+engine = chess.engine.SimpleEngine.popen_uci("/engine/stockfish/stockfish-ubuntu-x86-64")
 
 # Configure application
 app = Flask(__name__)
