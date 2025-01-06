@@ -1,4 +1,5 @@
 # Chess50
+#### Deployment: [Live website](https://chess50-dde8edd06871.herokuapp.com/)
 #### Video Demo:  https://youtu.be/QW3ZiED2QSU
 #### Description:
 This is Chess50, my final project of the CS50x - Introduction to Computer Science course. It is a web-based mini-clone application of the popular website chess.com. The front-end is mainly made with HTML and CSS, with some JavaScript for interactivity. The back-end is a combination of Python and JavaScript as well as Flask as the framework and SQLite for databases.
