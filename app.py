@@ -1,6 +1,7 @@
 import os
 import chess
 import chess.engine
+import secrets
 
 from chessdotcom import Client, get_current_daily_puzzle, get_leaderboards, get_player_profile, get_player_stats
 from cs50 import SQL
@@ -15,6 +16,12 @@ engine = chess.engine.SimpleEngine.popen_uci("engine/stockfish/ARM/stockfish-and
 
 # Configure application
 app = Flask(__name__)
+
+# Set secret key from environment variable or default to a random value
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', secrets.token_bytes(32).hex())
+
+# Set debug mode based on environment variable
+app.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False') == 'True'
 
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_PERMANENT"] = False
@@ -275,4 +282,4 @@ def profile():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, threaded=True)
+    app.run(threaded=True)
