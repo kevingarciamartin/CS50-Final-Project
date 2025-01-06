@@ -2,7 +2,7 @@ import os
 import chess
 import chess.engine
 
-from chessdotcom import get_current_daily_puzzle, get_leaderboards, get_player_profile, get_player_stats
+from chessdotcom import Client, get_current_daily_puzzle, get_leaderboards, get_player_profile, get_player_stats
 from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
@@ -24,6 +24,12 @@ Session(app)
 # Create connection to database
 DB_PATH = "app.db"
 db = SQL(f"sqlite:///{DB_PATH}")
+
+# Using 'Client' as per https://pypi.org/project/chess.com/
+Client.request_config["headers"]["User-Agent"] = (
+    "Chess50. "
+    "Contact me at kevingm@live.se"
+)
 
 @app.after_request
 def after_request(response):
