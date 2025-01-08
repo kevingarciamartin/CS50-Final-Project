@@ -5,7 +5,7 @@
 This is Chess50, my final project of the CS50x - Introduction to Computer Science course. It is a web-based mini-clone application of the popular website chess.com. The front-end is mainly made with HTML and CSS, with some JavaScript for interactivity. The back-end is a combination of Python and JavaScript as well as Flask as the framework and SQLite for databases.
 
 Features include:
-- playing chess against an engine (Stockfish 15.1) with take-back moves, engine moves on demand and flipping the board,
+- playing chess against an engine (Stockfish 17) with take-back moves, engine moves on demand and flipping the board,
 - solving chess.com's Daily Puzzle,
 - keeping track of the leaderboards for the most popular time controls,
 - and searching for valid chess.com usernames to get their profile information and game statistics.
